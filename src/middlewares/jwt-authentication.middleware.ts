@@ -11,16 +11,20 @@ async function jwtAuthenticationMiddleware(req: Request, res: Response, next: Ne
     const [authenticationType, token] = authorizationHeader.split(" ");
     if (authenticationType != "Bearer" || !token) throw new ForbiddenError("Tipo de autenticação inválido");
 
-    const tokenPayload = JWT.verify(token, "my_secret_key");
-    if (typeof tokenPayload !== "object" || !tokenPayload.sub) throw new ForbiddenError("Token inválido");
+    try {
+      const tokenPayload = JWT.verify(token, "my_secret_key");
+      if (typeof tokenPayload !== "object" || !tokenPayload.sub) throw new ForbiddenError("Token inválido");
 
-    const user = {
-      uuid: tokenPayload.sub,
-      username: tokenPayload.username,
-    };
-    req.user = user;
+      const user = {
+        uuid: tokenPayload.sub,
+        username: tokenPayload.username,
+      };
+      req.user = user;
 
-    next();
+      next();
+    } catch (error) {
+      next(error);
+    }
   } catch (error) {
     next(error);
   }
