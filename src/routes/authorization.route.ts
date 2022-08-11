@@ -18,6 +18,7 @@ authorizationRoute.post(
       const jwtPayload = { username: user.username };
       const jwtOptions = {
         subject: user?.uuid,
+        expiresIn: '15m',
       };
       const secretKey = "my_secret_key";
 

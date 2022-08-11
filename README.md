@@ -9,3 +9,4 @@
 TODO:
 - Adicionar .env
 - Adicionar docker
+- Adicionar rota para refresh token, além do error handler para retornar 401 caso o token esteja expirado
