@@ -4,11 +4,15 @@ import DatabaseError from "../errors/database.error.model";
 
 class UserRepository {
   async findAllUsers(): Promise<User[]> {
-    const query = `SELECT uuid, username
+    try {
+      const query = `SELECT uuid, username
     FROM application_user;`;
 
-    const { rows } = await db.query<User>(query);
-    return rows || [];
+      const { rows } = await db.query<User>(query);
+      return rows || [];
+    } catch (error) {
+      throw new DatabaseError("Erro na consulta por id", error);
+    }
   }
 
   async findById(uuid: string): Promise<User> {
@@ -27,33 +31,45 @@ class UserRepository {
   }
 
   async create(user: User): Promise<string> {
-    const query = `INSERT INTO application_user (username, password)
+    try {
+      const query = `INSERT INTO application_user (username, password)
     values($1, crypt($2, 'my_salt'))
     RETURNING uuid;`;
-    const values = [user.username, user.password];
+      const values = [user.username, user.password];
 
-    const { rows } = await db.query<{ uuid: string }>(query, values);
-    const [newUser] = rows;
-    return newUser.uuid;
+      const { rows } = await db.query<{ uuid: string }>(query, values);
+      const [newUser] = rows;
+      return newUser.uuid;
+    } catch (error) {
+      throw new DatabaseError("Erro na consulta por id", error);
+    }
   }
 
   async update(user: User): Promise<void> {
-    const query = `UPDATE application_user
+    try {
+      const query = `UPDATE application_user
     SET
      username = $1,
      password = crypt($2, 'my_salt')
     WHERE uuid = $3;`;
-    const values = [user.username, user.password, user.uuid];
+      const values = [user.username, user.password, user.uuid];
 
-    await db.query(query, values);
+      await db.query(query, values);
+    } catch (error) {
+      throw new DatabaseError("Erro na consulta por id", error);
+    }
   }
 
   async remove(uuid: string): Promise<void> {
-    const query = `DELETE FROM application_user
+    try {
+      const query = `DELETE FROM application_user
     WHERE uuid = $1;`;
-    const values = [uuid];
+      const values = [uuid];
 
-    await db.query(query, values);
+      await db.query(query, values);
+    } catch (error) {
+      throw new DatabaseError("Erro na consulta por id", error);
+    }
   }
 }
 
