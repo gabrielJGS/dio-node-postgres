@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import ForbiddenError from "../errors/forbidden.error.model";
+import ForbiddenError from "../models/errors/forbidden.error.model";
 import userRepository from "../repositories/user.repository";
 
 async function basicAuthenticationMiddleware(req: Request, res: Response, next: NextFunction) {
