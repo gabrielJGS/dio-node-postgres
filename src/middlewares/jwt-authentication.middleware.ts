@@ -16,16 +16,19 @@ async function jwtAuthenticationMiddleware(req: Request, res: Response, next: Ne
       if (typeof tokenPayload !== "object" || !tokenPayload.sub) throw new ForbiddenError("Token inválido");
 
       const user = {
-        uuid: tokenPayload.sub,
-        username: tokenPayload.username,
+        id: tokenPayload.sub,
+        email: tokenPayload.email,
       };
       req.user = user;
 
       next();
     } catch (error) {
+      console.error(error)
+
       next(error);
     }
   } catch (error) {
+    console.error(error)
     next(error);
   }
 }

@@ -15,16 +15,16 @@ authorizationRoute.post(
       const user = req.user;
       if (!user) throw new ForbiddenError("Usuário não informado");
 
-      const jwtPayload = { username: user.username };
+      const jwtPayload = { email: user.email };
       const jwtOptions = {
-        subject: user?.uuid,
-        expiresIn: '15m',
+        subject: user.id.toString(),
+        expiresIn: "15m",
       };
       const secretKey = "my_secret_key";
-
       const jwt = JWT.sign(jwtPayload, secretKey, jwtOptions);
       res.status(StatusCodes.OK).json({ token: jwt });
     } catch (error) {
+      console.error(error);
       next(error);
     }
   }

@@ -1,7 +1,9 @@
 type User = {
-  uuid?: string;
-  username: string;
-  password?: string;
-};
+  id: number;
+  name: string;
+  password: string;
+  email: string;
+  isAdmin: string;
+}
 
 export default User;
