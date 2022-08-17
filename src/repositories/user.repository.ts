@@ -28,11 +28,14 @@ class UserRepository {
 
   async findByEmailAndPassword(email: string, password: string): Promise<User | null> {
     try {
-      const result = await this.UserRepo.findOneBy({ email, password });
+      const result = await this.UserRepo.findOneBy({ email });
+      if (!result) throw new DatabaseError("Email não encontrado", { message: "Email não encontrado" });
+      const passIsRight = await User.comparePasswords(password, result.password);
+      if (!passIsRight) throw new DatabaseError("Senha incorreta", { message: "Senha incorreta" });
 
-      return result || null;
+      return result;
     } catch (error) {
-      throw new DatabaseError("Erro na consulta por email e password", error);
+      throw error;
     }
   }
 
