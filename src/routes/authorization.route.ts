@@ -17,14 +17,14 @@ authorizationRoute.post(
 
       const jwtPayload = { username: user.username };
       const jwtOptions = {
-        subject: user?.uuid,
-        expiresIn: '15m',
+        subject: user.id.toString(),
+        expiresIn: "15m",
       };
       const secretKey = "my_secret_key";
-
       const jwt = JWT.sign(jwtPayload, secretKey, jwtOptions);
       res.status(StatusCodes.OK).json({ token: jwt });
     } catch (error) {
+      console.error(error);
       next(error);
     }
   }

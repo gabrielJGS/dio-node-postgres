@@ -1,73 +1,72 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import userRepository from "../repositories/user.repository";
+import jwtAuthenticationMiddleware from "../middlewares/jwt-authentication.middleware";
 
 const usersRoute = Router();
 
-usersRoute.get(
-  "/users",
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const users = await userRepository.findAllUsers();
-      res.status(StatusCodes.OK).send(users);
-    } catch (error) {
-      next(error);
-    }
+usersRoute.get("/users", jwtAuthenticationMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const users = await userRepository.findAllUsers();
+    res.status(StatusCodes.OK).json(users);
+  } catch (error) {
+    console.error(error);
+    next(error);
   }
-);
+});
 
-usersRoute.get(
-  "/users/:uuid",
-  async (req: Request<{ uuid: string }>, res: Response, next: NextFunction) => {
-    try {
-      const uuid = req.params.uuid;
-      const user = await userRepository.findById(uuid);
-      res.status(StatusCodes.OK).send(user);
-    } catch (error) {
-      next(error);
-    }
+usersRoute.get("/users/:id", jwtAuthenticationMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = req.params.id;
+    const user = await userRepository.findById(Number(id));
+    res.status(StatusCodes.OK).json(user);
+  } catch (error) {
+    console.error(error);
+    next(error);
   }
-);
+});
 
-usersRoute.post(
-  "/users",
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const newUser = req.body;
-      const uuid = await userRepository.create(newUser);
+usersRoute.post("/users", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const newUser = req.body;
+    const id = await userRepository.create(newUser);
 
-      res.status(StatusCodes.CREATED).send(uuid);
-    } catch (error) {
-      next(error);
-    }
+    res.status(StatusCodes.CREATED).json(id);
+  } catch (error) {
+    console.error(error);
+    next(error);
   }
-);
+});
 
 usersRoute.put(
-  "/users/:uuid",
-  async (req: Request<{ uuid: string }>, res: Response, next: NextFunction) => {
+  "/users/:id",
+  jwtAuthenticationMiddleware,
+  async (req: Request<{ id: string }>, res: Response, next: NextFunction) => {
     try {
-      const uuid = req.params.uuid;
+      const id = req.params.id;
       const modifiedUser = req.body;
-      modifiedUser.uuid = uuid;
+      modifiedUser.id = id;
 
       await userRepository.update(modifiedUser);
 
       res.status(StatusCodes.OK).send();
     } catch (error) {
+      console.error(error);
       next(error);
     }
   }
 );
 
 usersRoute.delete(
-  "/users/:uuid",
-  async (req: Request<{ uuid: string }>, res: Response, next: NextFunction) => {
+  "/users/:id",
+  jwtAuthenticationMiddleware,
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const uuid = req.params.uuid;
-      await userRepository.remove(uuid);
+      const id = req.params.id;
+      await userRepository.remove(Number(id));
       res.status(StatusCodes.OK).send();
     } catch (error) {
+      console.error(error);
       next(error);
     }
   }
