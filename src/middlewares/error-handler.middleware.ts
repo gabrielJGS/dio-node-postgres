@@ -5,13 +5,11 @@ import ForbiddenError from "../models/errors/forbidden.error.model";
 
 function errorHandler(error: any, req: Request, res: Response, next: NextFunction) {
   if (error instanceof DatabaseError) {
-    res.sendStatus(StatusCodes.BAD_REQUEST);
+    res.send(error).status(StatusCodes.BAD_REQUEST);
   } else if (error instanceof ForbiddenError) {
-    console.error(error)
-    res.sendStatus(StatusCodes.FORBIDDEN);
+    res.send(error).status(StatusCodes.FORBIDDEN);
   } else {
-    
-    res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+    res.send(error).status(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 
 }

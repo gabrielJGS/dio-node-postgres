@@ -2,6 +2,7 @@ import { AppDataSource } from "../db/datasource";
 // import * as MUser from "../models/user.model";
 import { User } from "../entities/User";
 import DatabaseError from "../models/errors/database.error.model";
+import ForbiddenError from "../models/errors/forbidden.error.model";
 
 class UserRepository {
   UserRepo = AppDataSource.getRepository(User);
@@ -25,28 +26,28 @@ class UserRepository {
     }
   }
 
-  async findByUsernameAndPassword(username: string, password: string): Promise<User | null> {
+  async findByEmailAndPassword(email: string, password: string): Promise<User | null> {
     try {
-      const result = await this.UserRepo.findOneBy({ username, password });
+      const result = await this.UserRepo.findOneBy({ email, password });
 
       return result || null;
     } catch (error) {
-      throw new DatabaseError("Erro na consulta por username e password", error);
+      throw new DatabaseError("Erro na consulta por email e password", error);
     }
   }
 
   async create(user: User): Promise<string> {
     try {
       const userToCreate = new User();
+      userToCreate.name = user.name;
       userToCreate.email = user.email;
-      userToCreate.username = user.username;
       userToCreate.password = user.password;
 
       const result = await this.UserRepo.save(userToCreate);
       return result.id?.toString() || "";
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      throw new DatabaseError("Erro na consulta por id", error);
+      throw new DatabaseError("Erro na consulta por id", error.detail);
     }
   }
 
@@ -56,7 +57,7 @@ class UserRepository {
       if (!userToUpdate) throw new DatabaseError("Id de usuário não encontrado", null);
 
       userToUpdate.email = user.email;
-      userToUpdate.username = user.username;
+      userToUpdate.email = user.email;
       userToUpdate.password = user.password;
 
       await this.UserRepo.save(userToUpdate);

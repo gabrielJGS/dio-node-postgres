@@ -17,7 +17,7 @@ async function jwtAuthenticationMiddleware(req: Request, res: Response, next: Ne
 
       const user = {
         id: tokenPayload.sub,
-        username: tokenPayload.username,
+        email: tokenPayload.email,
       };
       req.user = user;
 
