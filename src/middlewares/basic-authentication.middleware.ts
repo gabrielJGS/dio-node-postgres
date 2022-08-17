@@ -16,7 +16,7 @@ async function basicAuthenticationMiddleware(req: Request, res: Response, next: 
 
     if (!email || !password) throw new ForbiddenError("Credenciais não preenchidas");
 
-    const user = await userRepository.findByUsernameAndPassword(email, password);
+    const user = await userRepository.findByEmailAndPassword(email, password);
     if (!user) throw new ForbiddenError("Usuário ou senha inválidos");
 
     req.user = user;
