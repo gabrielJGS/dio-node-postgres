@@ -1,30 +1,25 @@
-import db from "../db";
-import User from "../models/user.model";
+import { AppDataSource } from "../db/datasource";
+// import * as MUser from "../models/user.model";
+import { User } from "../entities/User";
 import DatabaseError from "../models/errors/database.error.model";
 
 class UserRepository {
+  UserRepo = AppDataSource.getRepository(User);
+
   async findAllUsers(): Promise<User[]> {
     try {
-      const query = `SELECT uuid, username
-    FROM application_user;`;
-
-      const { rows } = await db.query<User>(query);
-      return rows || [];
+      const result = await this.UserRepo.find();
+      return result || [];
     } catch (error) {
+      console.error(error);
       throw new DatabaseError("Erro na consulta por id", error);
     }
   }
 
-  async findById(uuid: string): Promise<User> {
+  async findById(id: number): Promise<User | null> {
     try {
-      const query = `SELECT uuid, username
-    FROM application_user
-    WHERE uuid = $1;`;
-      const values = [uuid];
-
-      const { rows } = await db.query<User>(query, values);
-      const [user] = rows;
-      return user;
+      const result = await this.UserRepo.findOneBy({ id });
+      return result;
     } catch (error) {
       throw new DatabaseError("Erro na consulta por id", error);
     }
@@ -32,17 +27,9 @@ class UserRepository {
 
   async findByUsernameAndPassword(username: string, password: string): Promise<User | null> {
     try {
-      const query = `SELECT uuid, username
-    FROM application_user
-    WHERE username = $1
-    AND password = crypt($2, 'my_salt');`;
+      const result = await this.UserRepo.findOneBy({ username, password });
 
-      const values = [username, password];
-
-      const { rows } = await db.query<User>(query, values);
-      const [user] = rows;
-
-      return user || null;
+      return result || null;
     } catch (error) {
       throw new DatabaseError("Erro na consulta por username e password", error);
     }
@@ -50,41 +37,37 @@ class UserRepository {
 
   async create(user: User): Promise<string> {
     try {
-      const query = `INSERT INTO application_user (username, password)
-    values($1, crypt($2, 'my_salt'))
-    RETURNING uuid;`;
-      const values = [user.username, user.password];
+      const userToCreate = new User();
+      userToCreate.email = user.email;
+      userToCreate.username = user.username;
+      userToCreate.password = user.password;
 
-      const { rows } = await db.query<{ uuid: string }>(query, values);
-      const [newUser] = rows;
-      return newUser.uuid;
+      const result = await this.UserRepo.save(userToCreate);
+      return result.id?.toString() || "";
     } catch (error) {
+      console.error(error);
       throw new DatabaseError("Erro na consulta por id", error);
     }
   }
 
   async update(user: User): Promise<void> {
     try {
-      const query = `UPDATE application_user
-    SET
-     username = $1,
-     password = crypt($2, 'my_salt')
-    WHERE uuid = $3;`;
-      const values = [user.username, user.password, user.uuid];
+      const userToUpdate = await this.findById(user.id);
+      if (!userToUpdate) throw new DatabaseError("Id de usuário não encontrado", null);
 
-      await db.query(query, values);
+      userToUpdate.email = user.email;
+      userToUpdate.username = user.username;
+      userToUpdate.password = user.password;
+
+      await this.UserRepo.save(userToUpdate);
     } catch (error) {
       throw new DatabaseError("Erro na consulta por id", error);
     }
   }
 
-  async remove(uuid: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     try {
-      const query = `DELETE FROM application_user
-    WHERE uuid = $1;`;
-      const values = [uuid];
-
-      await db.query(query, values);
+      await this.UserRepo.delete(id);
     } catch (error) {
       throw new DatabaseError("Erro na consulta por id", error);
     }
